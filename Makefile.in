@@ -54,7 +54,7 @@ install: pwgen pwgen.1 libpwgen.so.$(PWGEN_VERSION)
 	ln -s libpwgen.so.$(PWGEN_VERSION) $(DESTDIR)$(prefix)$(libdir)/libpwgen.so
 
 clean:
-	$(RM) -f $(OBJS) pwgen *~
+	$(RM) -f $(OBJS) pwgen *~ libpwgen.so.$(PWGEN_VERSION)
 
 distclean: clean
 	$(RM) -rf config.status config.log config.cache Makefile \
