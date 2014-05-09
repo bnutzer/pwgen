@@ -7,6 +7,7 @@ top_builddir = .
 my_dir = .
 prefix = @prefix@
 mandir = @mandir@
+libdir = @libdir@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
@@ -16,7 +17,7 @@ WALL_OPTS = -Wall -Wnested-externs -Wstrict-prototypes -Wmissing-prototypes \
 	-pedantic
 CC = @CC@
 DEFS = @DEFS@
-CFLAGS = @CFLAGS@ $(WALL_OPTS)
+CFLAGS = @CFLAGS@ $(WALL_OPTS) -fPIC
 CPPFLAGS = @CPPFLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(USE_WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) 
 LDFLAGS = @LDFLAGS@
@@ -26,12 +27,14 @@ SED = @SED@
 PERL = @PERL@
 TAR = tar
 
-all:: pwgen
+all:: pwgen libpwgen.so.$(PWGEN_VERSION)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 OBJS= pwgen.o pw_phonemes.o pw_rand.o randnum.o sha1.o sha1num.o
+
+SOOBJS= pw_phonemes.o pw_rand.o randnum.o sha1.o sha1num.o
 
 SRCS= pwgen.c pw_phonemes.c pw_rand.c randnum.c sha1.c sha1num.c
 
@@ -39,10 +42,16 @@ SRCS= pwgen.c pw_phonemes.c pw_rand.c randnum.c sha1.c sha1num.c
 pwgen: $(OBJS)
 	$(CC) $(LDFLAGS) -o pwgen $(OBJS)
 
-install: pwgen pwgen.1
-	mkdir -p $(DESTDIR)$(prefix)/bin $(DESTDIR)$(mandir)/man1
+libpwgen.so.$(PWGEN_VERSION): $(OBJS)
+	$(CC) -shared $(LDFLAGS) -o $@ $(SOOBJS)
+
+install: pwgen pwgen.1 libpwgen.so.$(PWGEN_VERSION)
+	mkdir -p $(DESTDIR)$(prefix)/bin $(DESTDIR)$(mandir)/man1 $(DESTDIR)$(libdir) $(DESTDIR)$(prefix)/include
 	$(INSTALL_PROGRAM) pwgen $(DESTDIR)$(prefix)/bin/pwgen
 	$(INSTALL_DATA) $(srcdir)/pwgen.1 $(DESTDIR)$(mandir)/man1/pwgen.1
+	$(INSTALL) $(srcdir)/libpwgen.so.$(PWGEN_VERSION) -t $(DESTDIR)$(prefix)$(libdir)
+	$(INSTALL) $(srcdir)/pwgen.h -t $(DESTDIR)$(prefix)/include/
+	ln -s libpwgen.so.$(PWGEN_VERSION) $(DESTDIR)$(prefix)$(libdir)/libpwgen.so
 
 clean:
 	$(RM) -f $(OBJS) pwgen *~
