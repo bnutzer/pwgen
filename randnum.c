@@ -7,6 +7,7 @@
  * License.
  */
 
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -28,29 +29,13 @@ static int get_random_fd()
 {
 	struct timeval	tv;
 	static int	fd = -2;
-	int		i;
 
 	if (fd == -2) {
 		gettimeofday(&tv, 0);
 		fd = open("/dev/urandom", O_RDONLY);
 		if (fd == -1)
 			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
-#ifdef HAVE_DRAND48
-		srand48((tv.tv_sec<<9) ^ (getpgrp()<<15) ^
-			(getpid()) ^ (tv.tv_usec>>11));
-#else
-		srandom((getpid() << 16) ^ (getpgrp() << 8) ^ getuid() 
-		      ^ tv.tv_sec ^ tv.tv_usec);
-#endif
 	}
-	/* Crank the random number generator a few times */
-	gettimeofday(&tv, 0);
-	for (i = (tv.tv_sec ^ tv.tv_usec) & 0x1F; i > 0; i--)
-#ifdef HAVE_DRAND48
-		drand48();
-#else
-		random();
-#endif
 	return fd;
 }
 
@@ -62,11 +47,12 @@ int pw_random_number(max_num)
 	int max_num;
 {
 	int i, fd = get_random_fd();
-	int lose_counter = 0, nbytes=4;
+	int lose_counter = 0, nbytes;
 	unsigned int rand_num;
 	char *cp = (char *) &rand_num;
 
 	if (fd >= 0) {
+		nbytes = sizeof(rand_num);
 		while (nbytes > 0) {
 			i = read(fd, cp, nbytes);
 			if ((i < 0) &&
@@ -85,11 +71,8 @@ int pw_random_number(max_num)
 	if (nbytes == 0)
 		return (rand_num % max_num);
 
-	/* OK, we weren't able to use /dev/random, fall back to rand/rand48 */
+	/* We weren't able to use /dev/random, fail hard */
 
-#ifdef HAVE_DRAND48
-	return ((int) ((drand48() * max_num)));
-#else
-	return ((int) (random() / ((float) RAND_MAX) * max_num));
-#endif
+	fprintf(stderr, "No entropy available!\n");
+	exit(1);
 }

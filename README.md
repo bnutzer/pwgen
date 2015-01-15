@@ -9,4 +9,5 @@ library, altough flawed (it is not thread safe due to global variables),
 provides an interface to be used by my Crypt::PwGen Perl module (to be found
 at github as well).
 
-(c) 2014 Bastian Friedrich <bastian@bastian-friedrich.de>
+(c) Theodore Ts'o <tytso@alum.mit.edu>,
+    Bastian Friedrich <bastian@bastian-friedrich.de>
