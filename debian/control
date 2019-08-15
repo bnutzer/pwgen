@@ -1,12 +1,16 @@
 Source: pwgen
 Section: admin
 Priority: optional
-Build-Depends: debhelper (>= 8)
+Build-Depends: debhelper (>= 12)
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Standards-Version: 3.9.6.0
+Standards-Version: 4.4.0
+Homepage: https://github.com/tytso/pwgen
+Vcs-Browser: https://github.com/tytso/pwgen
+Vcs-Git: https://github.com/tytso/pwgen.git
 
 Package: pwgen
 Architecture: any
+Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Automatic Password generation
  pwgen generates random, meaningless but pronounceable passwords.
@@ -17,6 +21,7 @@ Description: Automatic Password generation
 
 Package: pwgen-udeb
 Architecture: any
+Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Section: debian-installer
 XC-Package-Type: udeb

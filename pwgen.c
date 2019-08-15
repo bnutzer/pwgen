@@ -35,6 +35,7 @@ struct option pwgen_options[] = {
 	{ "numerals", no_argument, 0, 'n'},
 	{ "symbols", no_argument, 0, 'y'},
 	{ "num-passwords", required_argument, 0, 'N'},
+	{ "remove-chars", required_argument, 0, 'r' },
 	{ "secure", no_argument, 0, 's' },
 	{ "help", no_argument, 0, 'h'},
 	{ "no-numerals", no_argument, 0, '0' },
@@ -46,7 +47,7 @@ struct option pwgen_options[] = {
 };
 #endif
 
-const char *pw_options = "01AaBCcnN:shH:vy";
+const char *pw_options = "01AaBCcnN:sr:hH:vy";
 
 static void usage(void)
 {
@@ -66,6 +67,9 @@ static void usage(void)
 	fputs("  -y or --symbols\n", stderr);
 	fputs("\tInclude at least one special symbol in the password\n", 
 	      stderr);
+	fputs("  -r <chars> or --remove-chars=<chars>\n", stderr);
+	fputs("\tRemove characters from the set of characters to "
+	      "generate passwords\n", stderr);
 	fputs("  -s or --secure\n", stderr);
 	fputs("\tGenerate completely random passwords\n", stderr);
 	fputs("  -B or --ambiguous\n", stderr);
@@ -92,7 +96,8 @@ int main(int argc, char **argv)
 	int	c, i;
 	int	num_cols = -1;
 	char	*buf, *tmp;
-	void	(*pwgen)(char *inbuf, int size, int pw_flags);
+	char	*remove=NULL;
+	void	(*pwgen)(char *inbuf, int size, int pw_flags, char *remove);
 
 	pwgen = pw_phonemes;
 	pw_number = pw_random_number;
@@ -137,7 +142,6 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			pwgen = pw_rand;
-			pwgen_flags = PW_DIGITS | PW_UPPERS;
 			break;
 		case 'C':
 			do_columns = 1;
@@ -154,7 +158,11 @@ int main(int argc, char **argv)
 			break;
 		case 'v':
 			pwgen = pw_rand;
-			pwgen_flags |= PW_NO_VOWELS | PW_DIGITS | PW_UPPERS;
+			pwgen_flags |= PW_NO_VOWELS;
+			break;
+		case 'r':
+			remove = strdup(optarg);
+			pwgen = pw_rand;
 			break;
 		case 'h':
 		case '?':
@@ -166,10 +174,12 @@ int main(int argc, char **argv)
 		pw_length = strtol(argv[optind], &tmp, 0);
 		if (pw_length < 5)
 			pwgen = pw_rand;
-		if (pw_length <= 2)
-			pwgen_flags &= ~PW_UPPERS;
-		if (pw_length <= 1)
-			pwgen_flags &= ~PW_DIGITS;
+		if (pwgen != pw_rand) {
+			if (pw_length <= 2)
+				pwgen_flags &= ~PW_UPPERS;
+			if (pw_length <= 1)
+				pwgen_flags &= ~PW_DIGITS;
+		}
 		if (*tmp) {
 			fprintf(stderr, "Invalid password length: %s\n",
 				argv[optind]);
@@ -201,14 +211,13 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	for (i=0; i < num_pw; i++) {
-		pwgen(buf, pw_length, pwgen_flags);
-		if (!do_columns || ((i % num_cols) == (num_cols-1)))
+		pwgen(buf, pw_length, pwgen_flags, remove);
+		if (!do_columns || ((i % num_cols) == (num_cols-1)) ||
+		    (i == (num_pw - 1)))
 			printf("%s\n", buf);
 		else
 			printf("%s ", buf);
 	}
-	if ((num_cols > 1) && ((i % num_cols) != 0))
-		fputc('\n', stdout);
 	free(buf);
 	return 0;
 }

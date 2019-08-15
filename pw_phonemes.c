@@ -56,7 +56,7 @@ struct pw_element elements[] = {
 
 #define NUM_ELEMENTS (sizeof(elements) / sizeof (struct pw_element))
 
-void pw_phonemes(char *buf, int size, int pw_flags)
+void pw_phonemes(char *buf, int size, int pw_flags, char *remove)
 {
 	int		c, i, len, flags, feature_flags;
 	int		prev, should_be, first;
@@ -111,7 +111,7 @@ try_again:
 			buf[c+len] = '\0'; /* To make strpbrk() happy */
 			cp = strpbrk(buf, pw_ambiguous);
 			if (cp)
-				continue;
+				goto try_again;
 		}
 		
 		c += len;

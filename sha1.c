@@ -383,8 +383,6 @@ int main( argc, argv )
             sha1_update( &ctx, buf, i );
         }
 
-	fclose(f);
-
         sha1_finish( &ctx, sha1sum );
 
         for( j = 0; j < 20; j++ )
