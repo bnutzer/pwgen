@@ -64,10 +64,10 @@ install: pwgen pwgen.1 libpwgen.so.$(PWGEN_VERSION)
 	mkdir -p $(DESTDIR)$(prefix)/bin $(DESTDIR)$(mandir)/man1
 	$(INSTALL_PROGRAM) pwgen $(DESTDIR)$(prefix)/bin/pwgen
 	$(INSTALL_DATA) $(srcdir)/pwgen.1 $(DESTDIR)$(mandir)/man1/pwgen.1
-	mkdir -p $(DESTDIR)$(libdir) $(DESTDIR)$(prefix)/include
+	mkdir -p $(DESTDIR)$(prefix)$(libdir) $(DESTDIR)$(prefix)/include
 	$(INSTALL) $(srcdir)/libpwgen.so.$(PWGEN_VERSION) -t $(DESTDIR)$(prefix)$(libdir)
 	$(INSTALL) $(srcdir)/pwgen.h -t $(DESTDIR)$(prefix)/include/
-	ln -s libpwgen.so.$(PWGEN_VERSION) $(DESTDIR)$(prefix)$(libdir)/libpwgen.so
+	ln -sf libpwgen.so.$(PWGEN_VERSION) $(DESTDIR)$(prefix)$(libdir)/libpwgen.so
 
 clean:
 	$(RM) -f $(OBJS) pwgen *~ libpwgen.so.$(PWGEN_VERSION)
